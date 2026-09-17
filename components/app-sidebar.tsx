@@ -7,6 +7,11 @@ import Image from "next/image"
 import { Coins, MessageSquareIcon, SquarePen } from "lucide-react"
 
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -21,8 +26,39 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
+import type { Game } from "@/lib/games/queries"
 
-export function AppSidebar() {
+function GameButton({
+  game,
+  isCollapsed,
+}: {
+  game: Game
+  isCollapsed: boolean
+}) {
+  const button = (
+    <SidebarMenuButton tooltip={game.title}>
+      <MessageSquareIcon />
+      <span>{game.title}</span>
+    </SidebarMenuButton>
+  )
+
+  if (!isCollapsed) {
+    return <SidebarMenuItem>{button}</SidebarMenuItem>
+  }
+
+  return (
+    <SidebarMenuItem>
+      <Popover>
+        <PopoverTrigger render={button} />
+        <PopoverContent align="start" side="right">
+          <Link href={`/games/${game.id}`}>{game.title}</Link>
+        </PopoverContent>
+      </Popover>
+    </SidebarMenuItem>
+  )
+}
+
+export function AppSidebar({ games }: { games: Game[] }) {
   const pathname = usePathname()
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
@@ -66,12 +102,22 @@ export function AppSidebar() {
           <SidebarGroupLabel>Recents</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Your games will live here.">
-                  <MessageSquareIcon />
-                  <span>Your games will live here.</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {games.length > 0 ? (
+                games.map((game) => (
+                  <GameButton
+                    key={game.id}
+                    game={game}
+                    isCollapsed={isCollapsed}
+                  />
+                ))
+              ) : (
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Your games will live here.">
+                    <MessageSquareIcon />
+                    <span>Your games will live here.</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
