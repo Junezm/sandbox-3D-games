@@ -1,7 +1,18 @@
-import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
-export const demoUsers = pgTable('demo_users', {
-  id: serial('id').primaryKey(),
-  name: text('name'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-});
+export const games = pgTable(
+  "games",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orgId: text("org_id").notNull(),
+    title: text("title").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("games_org_id_idx").on(table.orgId)]
+)
